@@ -28,8 +28,7 @@ API to manage automobile inventory, including vehicle listings, dealership infor
 3. **Install dependencies**
 
     ```bash
-    pip install django djangorestframework djangorestframework-simplejwt
-
+    pip install -r requirements.txt
     ```
 
 4. **Run migrations**
