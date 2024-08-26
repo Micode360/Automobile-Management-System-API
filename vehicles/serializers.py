@@ -1,9 +1,11 @@
 from rest_framework import serializers
 from .models import Vehicle_Model
+from users.models import CustomUser
 
 
 
 class Vehicle_Serializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=False, allow_null=True)
     class Meta:
         model = Vehicle_Model
         fields = '__all__'

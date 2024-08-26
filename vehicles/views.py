@@ -3,17 +3,22 @@ from rest_framework.response import Response
 from .models import Vehicle_Model
 from .serializers import Vehicle_Serializer
 from rest_framework import status
-
+from rest_framework.permissions import IsAuthenticated
 
 
 class VehicleViews(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def get(self, request):
         vehicle = Vehicle_Model.objects.all()
         serializer = Vehicle_Serializer(vehicle, many=True)
         return Response({"message": "Vehicle Get request succesful", "data": serializer.data }, status=status.HTTP_200_OK)
     
     def post(self, request):
-        serializer = Vehicle_Serializer(data=request.data)
+        copy_dict_of_data = request.data.copy()  # Make a copy of the request data
+        copy_dict_of_data['user'] = request.user.id  # Add the user ID from the JWT token
+        
+        serializer = Vehicle_Serializer(data=copy_dict_of_data)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Vehicle Post Request Successful"}, status=status.HTTP_200_OK)
