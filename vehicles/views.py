@@ -3,19 +3,33 @@ from rest_framework.response import Response
 from .models import Vehicle_Model
 from .serializers import Vehicle_Serializer
 from rest_framework import status
-#from rest_framework.permissions import IsAuthenticated # Not needed. Already set to be protected by default using IsAuthenticated
+
 
 class VehicleViews(APIView):
-    # permission_classes = [IsAuthenticated] # Not needed. Already set to be protected by default using IsAuthenticated
-    
     def get(self, request):
-        vehicle = Vehicle_Model.objects.filter(user=request.user) # used to filter specific user data
+        make = request.GET.get('make')
+        price = request.GET.get('price')
+        v_range = request.GET.get('range')
+        year = request.GET.get('year')
+
+        vehicle = Vehicle_Model.objects.filter(user=request.user)
+
+        if make:
+            vehicle = vehicle.filter(make__iexact=make)
+        if price:
+            vehicle = vehicle.filter(price__lte=float(price))
+        if v_range:
+            min_price, max_price = map(float, v_range.split('-'))
+            vehicle = vehicle.filter(price__gte=min_price, price__lte=max_price)
+        if year:
+            vehicle = vehicle.filter(year__iexact=year)
+
         serializer = Vehicle_Serializer(vehicle, many=True)
-        return Response({"message": "Vehicle Get request succesful", "data": serializer.data }, status=status.HTTP_200_OK)
+        return Response({"message": "Vehicle get request successful", "data": serializer.data}, status=status.HTTP_200_OK)
     
     def post(self, request):
-        copy_dict_of_data = request.data.copy() # Make a copy of the request data
-        copy_dict_of_data['user'] = request.user.id  # Add the user ID from the JWT token
+        copy_dict_of_data = request.data.copy() 
+        copy_dict_of_data['user'] = request.user.id 
         
         serializer = Vehicle_Serializer(data=copy_dict_of_data)
         if serializer.is_valid():
@@ -32,7 +46,7 @@ class VehicleViews(APIView):
         serializer = Vehicle_Serializer(vehicle, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Vehicles deleted successfully.", "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response({"message": "Vehicles updated successfully.", "data": serializer.data}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, id):
@@ -41,4 +55,4 @@ class VehicleViews(APIView):
         except Vehicle_Model.DoesNotExist:
             return Response("message", "Data does not exist", status=status.HTTP_404_NOT_FOUND)
         vehicles.delete()
-        return Response({"message": "Data deleted successfully"},status=status.HTTP_204_NO_CONTENT)
+        return Response({"message": "Vehicles data deleted successfully"},status=status.HTTP_204_NO_CONTENT)
