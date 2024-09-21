@@ -4,10 +4,20 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth import authenticate
-from .serializers import CustomUserSerializer  # Ensure this points to the correct location of your CustomUserSerializer
+from .serializers import CustomUserSerializer
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 class UserRegistrationView(APIView):
     permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'email': openapi.Schema(type=openapi.TYPE_STRING, description='User email'),
+            'password': openapi.Schema(type=openapi.TYPE_STRING, description='User password'),
+        },
+    ))
 
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
@@ -18,6 +28,15 @@ class UserRegistrationView(APIView):
 
 class UserLoginView(APIView):
     permission_classes = [permissions.AllowAny]
+
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'email': openapi.Schema(type=openapi.TYPE_STRING, description='User email'),
+            'password': openapi.Schema(type=openapi.TYPE_STRING, description='User password'),
+        },
+    ))
 
     def post(self, request):
         email = request.data.get('email')
